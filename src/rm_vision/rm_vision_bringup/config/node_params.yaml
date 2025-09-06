@@ -26,7 +26,7 @@
     ignore_classes: ["negative"]
 /armor_tracker:
   ros__parameters:
-    target_frame: odom
+    target_frame: gimbal_link
     max_armor_distance: 15.0
     queue_size: 10
     tf_cache_time: 1.0

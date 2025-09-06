@@ -189,6 +189,7 @@ private:
         // 如果至少有一个数据有效，则广播TF
         if (yaw_valid || pitch_valid) {
             geometry_msgs::msg::TransformStamped transform;
+            transform.header.stamp = current_time - rclcpp::Duration::from_seconds(0.005);
             transform.header.stamp = current_time;
             transform.header.frame_id = "odom";
             transform.child_frame_id = "gimbal_link";

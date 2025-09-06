@@ -228,7 +228,7 @@ ArmorTrackerNode::ArmorTrackerNode(const rclcpp::NodeOptions & options)
 }
 
 void ArmorTrackerNode::armorsCallback(const auto_aim_interfaces::msg::Armors::SharedPtr armors_msg)
-{armors_msg->header.stamp = this->now();
+{
   // 添加调试信息：打印消息时间戳与当前TF缓存范围
 RCLCPP_INFO(this->get_logger(),
   "[DEBUG] armor_msg time: sec=%d, nanosec=%u",
@@ -253,20 +253,26 @@ RCLCPP_INFO(this->get_logger(),
   }
 
   // Tranform armor position from image frame to world coordinate
-  for (auto & armor : armors_msg->armors) {
-    geometry_msgs::msg::PoseStamped ps;
-    ps.header = armors_msg->header;
-    ps.pose = armor.pose;
-    try {
-      armor.pose = tf2_buffer_->transform(ps, target_frame_).pose;
-    } catch (const tf2::ExtrapolationException & ex) {
-      RCLCPP_WARN(get_logger(), "Transform warning: %s", ex.what());
-      return;
-    } catch (const tf2::TransformException & ex) {
-      RCLCPP_WARN(get_logger(), "Transform error: %s", ex.what());
-      return;
-    }
+for (auto & armor : armors_msg->armors) {
+  geometry_msgs::msg::PoseStamped ps;
+  ps.header = armors_msg->header;
+  ps.pose = armor.pose;
+  try {
+    // 使用最新的可用TF变换而不是精确时间戳的变换
+    geometry_msgs::msg::TransformStamped transformStamped = tf2_buffer_->lookupTransform(
+      target_frame_, ps.header.frame_id, tf2::TimePointZero);
+    // 使用最新变换的时间戳更新消息头
+    ps.header.stamp = transformStamped.header.stamp;
+    tf2::doTransform(ps, ps, transformStamped);
+    armor.pose = ps.pose;
+  } catch (const tf2::ExtrapolationException & ex) {
+    RCLCPP_WARN(get_logger(), "Transform warning: %s", ex.what());
+    return;
+  } catch (const tf2::TransformException & ex) {
+    RCLCPP_WARN(get_logger(), "Transform error: %s", ex.what());
+    return;
   }
+}
 
   // Filter abnormal armors
   armors_msg->armors.erase(
