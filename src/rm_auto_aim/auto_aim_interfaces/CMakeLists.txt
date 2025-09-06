@@ -20,7 +20,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/DebugArmor.msg"
   "msg/DebugArmors.msg"
   "msg/TrackerInfo.msg"
-
+  "msg/RobotStatus.msg"
   "msg/TimeInfo.msg"
 
   DEPENDENCIES
@@ -28,5 +28,5 @@ rosidl_generate_interfaces(${PROJECT_NAME}
     geometry_msgs
 )
 
-
+ament_export_dependencies(rosidl_default_runtime)
 ament_package()

@@ -3,14 +3,13 @@
     camera_info_url: package://rm_vision_bringup/config/camera_info.yaml
     exposure_time: 3000
     gain: 32.0
-/serial_driver:
+# 在文件末尾添加
+/rm_can_driver:
   ros__parameters:
-    timestamp_offset: 0.006
-    device_name: /dev/ttyACM0
-    baud_rate: 115200
-    flow_control: none
-    parity: none
-    stop_bits: "1"
+    can_interface: "can0"
+    gimbal:
+      yaw_id: 5    # 对应 CAN ID 0x205 (0x200 + 5)
+      pitch_id: 6
 
 /armor_detector:
   ros__parameters:
@@ -27,7 +26,7 @@
     ignore_classes: ["negative"]
 /armor_tracker:
   ros__parameters:
-    target_frame: gimbal_link
+    target_frame: odom
     max_armor_distance: 15.0
     queue_size: 10
     tf_cache_time: 1.0

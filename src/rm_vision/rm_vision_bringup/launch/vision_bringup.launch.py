@@ -1,3 +1,4 @@
+# 文件路径: rm_vision/rm_vision_bringup/launch/vision_bringup.launch.py
 import os
 import sys
 from ament_index_python.packages import get_package_share_directory
@@ -60,21 +61,22 @@ def generate_launch_description():
     elif (launch_params['camera'] == 'mv'):
         cam_detector = get_camera_detector_container(mv_camera_node)
 
-    serial_driver_node = Node(
-        package='rm_serial_driver',
-        executable='rm_serial_driver_node',
-        name='serial_driver',
-        output='both',
-        emulate_tty=True,
-        parameters=[node_params],
-        on_exit=Shutdown(),
-        ros_arguments=['--ros-args', '--log-level',
-                       'serial_driver:='+launch_params['serial_log_level']],
+    # 修改CAN驱动节点参数配置
+    can_driver_node = Node(
+    package='rm_can_driver',
+    executable='rm_can_driver_node',
+    name='can_driver',
+    output='both',
+    emulate_tty=True,
+    parameters=[node_params],  # 使用YAML文件中的参数
+    on_exit=Shutdown(),
+    ros_arguments=['--ros-args', '--log-level',
+               'can_driver:='+launch_params['serial_log_level']],
     )
 
-    delay_serial_node = TimerAction(
+    delay_can_node = TimerAction(
         period=1.5,
-        actions=[serial_driver_node],
+        actions=[can_driver_node],
     )
 
     delay_armor_tracker_node = TimerAction(
@@ -95,7 +97,7 @@ def generate_launch_description():
     return LaunchDescription([
         robot_state_publisher,
         cam_detector,       
-        delay_serial_node,
+        delay_can_node,
         delay_armor_tracker_node,
         delay_buff_tracker_node,
         delay_auto_record_node

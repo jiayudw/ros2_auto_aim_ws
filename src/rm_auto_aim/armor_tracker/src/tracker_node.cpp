@@ -214,10 +214,21 @@ ArmorTrackerNode::ArmorTrackerNode(const rclcpp::NodeOptions & options)
   armor_marker_.color.a = 1.0;
   armor_marker_.color.r = 1.0;
   marker_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("/tracker/marker", 10);
+    // 订阅CAN数据
+  robot_status_sub_ = this->create_subscription<auto_aim_interfaces::msg::RobotStatus>(
+      "/robot_status", 10, 
+      [this](const auto_aim_interfaces::msg::RobotStatus::SharedPtr msg) {
+          std::lock_guard<std::mutex> lock(robot_state_mutex_);
+          current_yaw_ = msg->yaw;
+          current_pitch_ = msg->pitch;
+          robot_state_timestamp_ = msg->header.stamp;
+          RCLCPP_DEBUG(this->get_logger(), "Received robot state: yaw=%.3f, pitch=%.3f", 
+                       current_yaw_, current_pitch_);
+      });
 }
 
 void ArmorTrackerNode::armorsCallback(const auto_aim_interfaces::msg::Armors::SharedPtr armors_msg)
-{
+{armors_msg->header.stamp = this->now();
   // 添加调试信息：打印消息时间戳与当前TF缓存范围
 RCLCPP_INFO(this->get_logger(),
   "[DEBUG] armor_msg time: sec=%d, nanosec=%u",

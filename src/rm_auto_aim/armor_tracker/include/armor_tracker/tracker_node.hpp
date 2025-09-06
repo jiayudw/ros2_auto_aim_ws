@@ -21,7 +21,8 @@
 #include <memory>
 #include <string>
 #include <vector>
-
+#include <mutex>
+#include "auto_aim_interfaces/msg/robot_status.hpp"
 #include "armor_tracker/tracker.hpp"
 #include "auto_aim_interfaces/msg/armors.hpp"
 #include "auto_aim_interfaces/msg/target.hpp"
@@ -78,6 +79,13 @@ private:
   visualization_msgs::msg::Marker angular_v_marker_;
   visualization_msgs::msg::Marker armor_marker_;
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
+
+    // Robot state from CAN
+  rclcpp::Subscription<auto_aim_interfaces::msg::RobotStatus>::SharedPtr robot_status_sub_;
+  std::mutex robot_state_mutex_;
+  double current_yaw_ = 0.0;
+  double current_pitch_ = 0.0;
+  rclcpp::Time robot_state_timestamp_;
 };
 
 }  // namespace rm_auto_aim
